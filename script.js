@@ -511,3 +511,48 @@ window.handleUguuLink = async function(imgUrl, anchorEl) {
     anchorEl.style.pointerEvents = '';
   }
 }
+
+// === Тестовая кнопка для загрузки на uguu.se ===
+(function() {
+  // Создаём кнопку
+  const testBtn = document.createElement('button');
+  testBtn.innerText = 'Тест: загрузить картинку на uguu.se';
+  testBtn.style.position = 'fixed';
+  testBtn.style.bottom = '30px';
+  testBtn.style.right = '30px';
+  testBtn.style.zIndex = 99999;
+  testBtn.style.background = '#007AFF';
+  testBtn.style.color = '#fff';
+  testBtn.style.padding = '12px 20px';
+  testBtn.style.borderRadius = '10px';
+  testBtn.style.border = 'none';
+  testBtn.style.fontSize = '16px';
+  testBtn.style.cursor = 'pointer';
+  document.body.appendChild(testBtn);
+
+  // Пример dataURL (маленькая прозрачная PNG-картинка 1x1)
+  const testDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAn8B9Qn6ZQAAAABJRU5ErkJggg==';
+
+  testBtn.onclick = async function() {
+    testBtn.innerText = 'Загрузка...';
+    try {
+      const blob = await (await fetch(testDataUrl)).blob();
+      const formData = new FormData();
+      formData.append('files[]', blob, 'test.png');
+      const resp = await fetch('https://uguu.se/upload?output=json', {
+        method: 'POST',
+        body: formData
+      });
+      if (!resp.ok) throw new Error('Ошибка загрузки на uguu.se');
+      const json = await resp.json();
+      if (!json.success || !json.files || !json.files[0] || !json.files[0].url) throw new Error('Некорректный ответ от uguu.se');
+      let url = json.files[0].url.replace(/\\/g, '');
+      alert('Ссылка на картинку: ' + url);
+      testBtn.innerText = 'Успех! Ссылка в alert';
+    } catch (e) {
+      alert('Ошибка загрузки на uguu.se: ' + e.message);
+      testBtn.innerText = 'Ошибка! Попробуйте ещё раз';
+    }
+    setTimeout(() => { testBtn.innerText = 'Тест: загрузить картинку на uguu.se'; }, 3000);
+  };
+})();
