@@ -151,7 +151,7 @@ async function generateImage() {
   downloadButton.style.display = "inline-block";
   downloadButton.onclick = () => {
       const link = document.createElement('a');
-      link.download = 'schedule.png';
+      link.download = 'schedule.bmp';
       link.href = imgURL;
       link.click();
   };
