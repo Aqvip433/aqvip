@@ -117,3 +117,23 @@ input[type="radio"] {
     display: block;
   }
 }
+
+.link-icon {
+  position: absolute;
+  top: 12px;
+  right: 52px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 2;
+  transition: background 0.2s;
+}
+.link-icon:hover {
+  background: #eaf3ff;
+}
