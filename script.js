@@ -441,3 +441,73 @@ function wrapTextLines(ctx, text, maxWidth, lineHeight) {
   lines.push(line.trim());
   return lines;
 }
+
+// === ВСПЛЫВАЮЩЕЕ ОКНО ДЛЯ ССЫЛКИ ===
+function showLinkPopup(url, anchorEl) {
+  let popup = document.getElementById('linkPopup');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'linkPopup';
+    popup.style.position = 'fixed';
+    popup.style.zIndex = 99999;
+    popup.style.background = '#fff';
+    popup.style.border = '1.5px solid #007AFF';
+    popup.style.borderRadius = '14px';
+    popup.style.padding = '18px 22px';
+    popup.style.boxShadow = '0 4px 24px rgba(0,0,0,0.13)';
+    popup.style.display = 'flex';
+    popup.style.flexDirection = 'column';
+    popup.style.alignItems = 'center';
+    popup.style.minWidth = '260px';
+    popup.style.gap = '12px';
+    document.body.appendChild(popup);
+  }
+  popup.innerHTML = `<div style='font-size:16px;margin-bottom:6px;'>Ссылка на изображение:</div><input id='linkPopupInput' style='width:100%;font-size:15px;padding:6px 8px;border-radius:7px;border:1px solid #e5e5ea;' value='${url}' readonly><button id='copyLinkBtn' style='margin-top:8px;background:#007AFF;color:#fff;border:none;border-radius:8px;padding:7px 18px;font-size:15px;cursor:pointer;'>Скопировать</button><button id='closeLinkBtn' style='margin-top:2px;background:#eee;color:#222;border:none;border-radius:8px;padding:5px 14px;font-size:14px;cursor:pointer;'>Закрыть</button>`;
+  // Позиционирование
+  const rect = anchorEl.getBoundingClientRect();
+  popup.style.top = (rect.bottom + 8) + 'px';
+  popup.style.left = (rect.left - 40) + 'px';
+  // Копирование
+  document.getElementById('copyLinkBtn').onclick = function() {
+    const input = document.getElementById('linkPopupInput');
+    input.select();
+    document.execCommand('copy');
+    this.innerText = 'Скопировано!';
+    setTimeout(()=>{this.innerText='Скопировать';}, 1200);
+  };
+  document.getElementById('closeLinkBtn').onclick = function() {
+    popup.style.display = 'none';
+  };
+  popup.style.display = 'flex';
+}
+// === ЗАГРУЗКА НА UGUU ===
+window.handleUguuLink = async function(imgUrl, anchorEl) {
+  try {
+    anchorEl.style.opacity = '0.5';
+    anchorEl.style.pointerEvents = 'none';
+    // Получаем blob из dataURL
+    const blob = await (await fetch(imgUrl)).blob();
+    const formData = new FormData();
+    formData.append('files[]', blob, 'schedule.bmp');
+    // Отправляем на uguu.se
+    const resp = await fetch('https://uguu.se/upload?output=json', {
+      method: 'POST',
+      body: formData
+    });
+    if (!resp.ok) throw new Error('Ошибка загрузки на uguu.se');
+    const json = await resp.json();
+    if (!json.success || !json.files || !json.files[0] || !json.files[0].url) throw new Error('Некорректный ответ от uguu.se');
+    let url = json.files[0].url.replace(/\\/g, '').replace(/\//g, '/');
+    // Убираем экранирование
+    if (url.startsWith('http')) {
+      showLinkPopup(url, anchorEl);
+    } else {
+      showLinkPopup('https://uguu.se'+url, anchorEl);
+    }
+  } catch (e) {
+    alert('Ошибка загрузки на uguu.se: '+e.message);
+  } finally {
+    anchorEl.style.opacity = '';
+    anchorEl.style.pointerEvents = '';
+  }
+}
