@@ -550,6 +550,18 @@
           a.click();
         };
         block.appendChild(downloadBtn);
+        // Новая иконка-ссылка
+        const linkBtn = document.createElement('div');
+        linkBtn.className = 'link-icon';
+        linkBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 13a5 5 0 0 1 0-7l2-2a5 5 0 0 1 7 7l-1 1" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 7a5 5 0 0 1 0 7l-2 2a5 5 0 0 1-7-7l1-1" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        linkBtn.title = 'Получить ссылку на изображение через uguu.se';
+        linkBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (typeof window.handleUguuLink === 'function') {
+            window.handleUguuLink(imgUrl, linkBtn);
+          }
+        };
+        block.appendChild(linkBtn);
         historyList.appendChild(block);
       });
       // Показывать заголовок только если есть история
