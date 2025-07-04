@@ -1,0 +1,119 @@
+.style-options {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+.style-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  transition: border 0.2s;
+  background: #fff;
+}
+input[type="radio"]:checked + .style-preview {
+  border: 2px solid #007AFF;
+}
+.style1 {
+  background: #f8f9fa;
+  color: #222;
+  font-family: 'San Francisco', 'Segoe UI', Arial, sans-serif;
+  border: 2px solid #e5e5ea;
+}
+.style2 {
+  background: linear-gradient(135deg, #222 60%, #444 100%);
+  color: #fff;
+  font-family: 'San Francisco', 'Segoe UI', Arial, sans-serif;
+  border: 2px solid #222;
+}
+.style3 {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(6px);
+  color: #222;
+  font-family: 'San Francisco', 'Segoe UI', Arial, sans-serif;
+  border: 2px solid #d1d1d6;
+}
+.style4 {
+  background: #fff;
+  color: #007AFF;
+  font-family: 'San Francisco', 'Segoe UI', Arial, sans-serif;
+  border: 2px solid #007AFF;
+}
+.style-label {
+  margin: 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+input[type="radio"] {
+  margin-top: 10px;
+  accent-color: #007AFF;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+/* Glassmorphism style for style3 */
+.glass-bg {
+  background: linear-gradient(135deg, #e3e9ef 0%, #f7fafc 100%);
+  min-height: 100vh;
+}
+.glass-block {
+  background: rgba(255,255,255,0.75);
+  border-radius: 32px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  border: 2px solid #e5e5ea;
+  padding: 32px;
+  margin: 24px;
+}
+.glass-title {
+  color: #007AFF;
+  font-weight: bold;
+  font-size: 22px;
+  margin-bottom: 18px;
+}
+.glass-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 16px;
+  color: #222;
+}
+.glass-table th, .glass-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #e5e5ea;
+}
+.glass-table th {
+  font-weight: bold;
+  font-size: 18px;
+  color: #007AFF;
+  background: none;
+}
+.glass-table tr:last-child td {
+  border-bottom: none;
+}
+
+.back-btn {
+  position: static;
+  margin-top: 24px;
+  margin-left: 24px;
+  margin-bottom: 18px;
+  z-index: 10;
+  display: inline-block;
+}
+@media (max-width: 700px) {
+  .back-btn {
+    margin-top: 12px;
+    margin-left: 8px;
+    margin-bottom: 12px;
+    display: block;
+  }
+}

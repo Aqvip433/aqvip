@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Расписание</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f5f5f7;
+      min-height: 100vh;
+      color: #1d1d1f;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    /* Выбор стиля */
+    .style-selector {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .style-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1d1d1f;
+      margin-bottom: 40px;
+    }
+    
+    .style-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    
+    .style-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .style-option:active {
+      transform: scale(0.98);
+    }
+    
+    .style-preview {
+      width: 200px;
+      height: 140px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      border: 3px solid transparent;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .style-preview.selected {
+      border-color: #007AFF;
+      box-shadow: 0 0 0 1px #007AFF;
+    }
+    
+    .style1 {
+      background: #f8f9fa;
+      color: #1d1d1f;
+      border: 1px solid #e5e5ea;
+    }
+    
+    .style3 {
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      color: #007AFF;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .style-preview-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #007AFF;
+      margin-bottom: 8px;
+    }
+    
+    .style-preview-content {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .style-label {
+      font-size: 17px;
+      font-weight: 500;
+      color: #8e8e93;
+      margin-bottom: 12px;
+    }
+    
+    .style-radio {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #c7c7cc;
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    
+    .style-option input[type="radio"] {
+      display: none;
+    }
+    
+    .style-option input[type="radio"]:checked + .style-preview + .style-label + .style-radio {
+      border-color: #007AFF;
+      background: #007AFF;
+    }
+    
+    .style-option input[type="radio"]:checked + .style-preview + .style-label + .style-radio::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+    }
+    
+    .btn-primary {
+      background: #1d1d1f;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 16px 40px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .btn-primary:hover {
+      background: #2d2d2f;
+    }
+    
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+    
+    /* Основной интерфейс */
+    .main-interface {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    
+    .back-button {
+      background: none;
+      border: none;
+      color: #007AFF;
+      font-size: 17px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s ease;
+    }
+    
+    .back-button:hover {
+      opacity: 0.7;
+    }
+    
+    .back-button:active {
+      transform: scale(0.98);
+    }
+    
+    .textarea-container {
+      margin-bottom: 24px;
+    }
+    
+    .textarea-label {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 12px;
+      display: block;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      border: 1px solid #e5e5ea;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', monospace;
+      background: #fafafa;
+      color: #1d1d1f;
+      resize: vertical;
+      transition: all 0.2s ease;
+      line-height: 1.4;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: #007AFF;
+      background: white;
+    }
+    
+    textarea::placeholder {
+      color: #8e8e93;
+    }
+    
+    .generate-btn {
+      background: #007AFF;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 16px 40px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    
+    .generate-btn:hover {
+      background: #0056b3;
+    }
+    
+    .generate-btn:active {
+      transform: scale(0.98);
+    }
+    
+    /* Preview section */
+    .preview {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .preview img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .download-btn {
+      background: #34C759;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .download-btn:hover {
+      background: #28A745;
+    }
+    
+    .download-btn:active {
+      transform: scale(0.98);
+    }
+    
+    /* История */
+    .history-section {
+      margin-top: 30px;
+    }
+    
+    .history-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 20px;
+    }
+    
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .history-item {
+      background: white;
+      border-radius: 16px;
+      padding: 12px;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border: 1px solid #f0f0f0;
+      transition: all 0.2s ease;
+    }
+    
+    .history-item:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    
+    .history-image {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #f8f9fa;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .history-image:active {
+      transform: scale(0.98);
+    }
+    
+    .history-download {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .history-download:hover {
+      background: white;
+      transform: scale(1.05);
+    }
+    
+    .history-download:active {
+      transform: scale(0.95);
+    }
+    
+    /* Лайтбокс */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .lightbox.show {
+      display: flex;
+    }
+    
+    .lightbox img {
+      max-width: 95%;
+      max-height: 95%;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    
+    .style-lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 9998;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .style-lightbox.show {
+      display: flex;
+    }
+    
+    .lightbox-canvas {
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
+      
+      .style-selector {
+        padding: 30px 20px;
+      }
+      
+      .style-title {
+        font-size: 24px;
+        margin-bottom: 30px;
+      }
+      
+      .style-options {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .style-preview {
+        width: 100%;
+        max-width: 280px;
+        height: 120px;
+      }
+      
+      .main-interface {
+        padding: 20px;
+      }
+      
+      .preview {
+        padding: 20px;
+      }
+      
+      .history-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+      }
+      
+      .history-image {
+        height: 100px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .style-preview {
+        height: 100px;
+      }
+      
+      .history-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .history-image {
+        height: 80px;
+      }
+    }
+    
+    /* Анимации */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .style-selector, .main-interface, .preview {
+      animation: fadeIn 0.5s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Выбор стиля -->
+    <div id="styleSelector" class="style-selector">
+      <h1 class="style-title">Выберите дизайн таблицы</h1>
+      <div class="style-options">
+        <label class="style-option">
+          <input type="radio" name="tableStyle" value="style1" checked>
+          <div class="style-preview style1" onclick="openStyleLightbox(1)">
+            <div class="style-preview-title">Суббота</div>
+            <div class="style-preview-content">
+              1. Физика<br>
+              2. Математика<br>
+              3. Английский
+            </div>
+          </div>
+          <span class="style-label"></span>
+          <div class="style-radio"></div>
+        </label>
+        <label class="style-option">
+          <input type="radio" name="tableStyle" value="style3">
+          <div class="style-preview style3" onclick="openStyleLightbox(3)">
+            <div class="style-preview-title">Суббота</div>
+            <div class="style-preview-content">
+              1. Физика<br>
+              2. Математика<br>
+              3. Английский
+            </div>
+          </div>
+          <span class="style-label"></span>
+          <div class="style-radio"></div>
+        </label>
+      </div>
+      <button id="chooseStyleBtn" class="btn-primary">Выбрать стиль</button>
+    </div>
+
+    <!-- Основной интерфейс -->
+    <div id="mainInput" class="hidden">
+      <div class="main-interface">
+        <button id="backToStyleBtn" class="back-button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M10.5 3.5L6 8l4.5 4.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Выбрать другой стиль
+        </button>
+        
+        <div class="textarea-container">
+          <label class="textarea-label">Вставьте сюда текст расписания...</label>
+          <textarea id="inputText" placeholder="Вставьте сюда текст расписания...">📚 Расписание для группы 24/ИП-191к
+Сверяйте расписание с гугл таблицей! Здесь возможны ошибки. В случае неточностей, сообщите нам!
+
+
+═══════════════
+ СУББОТА
+═══════════════
+
+1️⃣ ЭКЗАМЕН
+Физика 
+9.00
+Преподаватель: Шматков
+Кабинет: 417</textarea>
+        </div>
+        <button onclick="generateImage()" class="generate-btn">Сгенерировать фото</button>
+      </div>
+
+      <!-- Preview section -->
+      <div id="preview" class="preview hidden">
+        <img id="outputImg" src="" alt="Сгенерированное расписание">
+        <br>
+        <button id="downloadButton" class="download-btn">Скачать изображение</button>
+      </div>
+
+      <!-- История -->
+      <div id="historySection" class="history-section hidden">
+        <h3 class="history-title">Список сгенерированных расписаний:</h3>
+        <div id="historyList" class="history-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Лайтбоксы -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+    <img id="lightboxImg" src="">
+  </div>
+
+  <div id="styleLightbox" class="style-lightbox" onclick="closeStyleLightbox(event)">
+    <canvas id="lightboxCanvas" class="lightbox-canvas" width="400" height="260"></canvas>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = context.measureText(testLine);
+            const testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                context.fillText(line.trim(), x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        context.fillText(line.trim(), x, y);
+        return y + lineHeight;
+    }
+
+    function estimateCallScheduleHeight(data, colWidth) {
+      let h = 0;
+      const padding = 20;
+      const titleH = 35 + 12;
+      const pairH = 25 + 20 * 2;
+      const lunchH = 25 + 20 * 2;
+      h += titleH + data.weekday_schedule.pairs.length * pairH;
+      h += titleH + data.weekday_lunch.times.length * 20;
+      h += 15;
+      h += titleH + data.saturday_schedule.pairs.length * pairH;
+      h += titleH + data.saturday_lunch.times.length * 20;
+      h += 40;
+      return h;
+    }
+
+    function parseScheduleText(text) {
+      const scheduleData = {};
+      const daysInRussian = ["ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"];
+      const dayOrder = { "ПОНЕДЕЛЬНИК": 1, "ВТОРНИК": 2, "СРЕДА": 3, "ЧЕТВЕРГ": 4, "ПЯТНИЦА": 5, "СУББОТА": 6 };
+      const dayBlocks = text.split(new RegExp(`(?=(${daysInRussian.join('|')}))`, 'g'));
+      const lessonEmojiMap = {
+          '1️⃣': '1', '2️⃣': '2', '3️⃣': '3', '4️⃣': '4', '5️⃣': '5',
+          '6️⃣': '6', '7️⃣': '7', '8️⃣': '8', '9️⃣': '9'
+      };
+      const lessonRegex = new RegExp(`(${Object.keys(lessonEmojiMap).join('|')})\\s*(.*)`);
+      for (const block of dayBlocks) {
+          if (block.trim() === "") continue;
+          const lines = block.trim().split('\n');
+          const day = lines[0].trim();
+          if (!daysInRussian.includes(day)) continue;
+          scheduleData[day] = {};
+          let currentLesson = null;
+          let lessonInfo = {};
+          for (let i = 1; i < lines.length; i++) {
+              const line = lines[i].trim();
+              if (line === "" || line.startsWith('═')) continue;
+              const lessonMatch = line.match(lessonRegex);
+              if (lessonMatch) {
+                  if (currentLesson) {
+                      scheduleData[day][currentLesson] = lessonInfo;
+                  }
+                  currentLesson = lessonEmojiMap[lessonMatch[1]];
+                  const subjectText = lessonMatch[2].replace('/', '').trim();
+                  lessonInfo = { subject: subjectText ? [subjectText] : [] };
+              } else if (currentLesson) {
+                  if (line.startsWith("Преподаватель:")) {
+                      lessonInfo.teacher = line.replace("Преподаватель:", "").trim();
+                  } else if (line.startsWith("Кабинет:")) {
+                      lessonInfo.cabinet = line.replace("Кабинет:", "").trim();
+                  } else if (lessonInfo.subject && line) {
+                      lessonInfo.subject.push(line);
+                  }
+              }
+          }
+          if (currentLesson) {
+              scheduleData[day][currentLesson] = lessonInfo;
+          }
+      }
+      const sortedScheduleData = Object.keys(scheduleData)
+        .sort((a, b) => dayOrder[a] - dayOrder[b])
+        .reduce((obj, key) => { 
+          obj[key] = scheduleData[key]; 
+          return obj;
+        }, {});
+      return sortedScheduleData;
+    }
+
+    function drawScheduleGrid(ctx, canvas, scheduleData, callScheduleData, canvasHeight, style) {
+        const daysInSchedule = Object.keys(scheduleData);
+        const dayDisplayNames = {
+            "ПОНЕДЕЛЬНИК": "Понедельник", "ВТОРНИК": "Вторник", "СРЕДА": "Среда",
+            "ЧЕТВЕРГ": "Четверг", "ПЯТНИЦА": "Пятница", "СУББОТА": "Суббота"
+        };
+        const romanNumerals = ["I", "II", "III", "IV", "V", "VI"];
+        const lessonNumColWidth = 60;
+        const dayColWidth = 210;
+        const headerHeight = 70;
+        const cellPadding = 15;
+        const lineHeight = 22;
+        const callScheduleColWidth = 300;
+        canvas.width = lessonNumColWidth + daysInSchedule.length * dayColWidth + callScheduleColWidth;
+        canvas.height = canvasHeight;
+        const lessonRowHeight = (canvas.height - headerHeight) / 6;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#212529";
+        ctx.font = "22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        daysInSchedule.forEach((dayKey, index) => {
+            const x = lessonNumColWidth + index * dayColWidth + dayColWidth / 2;
+            ctx.fillText(dayDisplayNames[dayKey] || dayKey, x, headerHeight / 2);
+        });
+        ctx.font = "22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+        romanNumerals.forEach((num, index) => {
+            const y = headerHeight + index * lessonRowHeight + lessonRowHeight / 2;
+            ctx.fillText(num, lessonNumColWidth / 2, y);
+        });
+        ctx.textAlign = "center";
+        daysInSchedule.forEach((dayKey, dayIndex) => {
+            const daySchedule = scheduleData[dayKey];
+            if (!daySchedule) return;
+            for (let lessonNum = 1; lessonNum <= 6; lessonNum++) {
+                const lessonInfo = daySchedule[String(lessonNum)];
+                if (!lessonInfo) continue;
+                const rowIndex = lessonNum - 1;
+                const x = lessonNumColWidth + dayIndex * dayColWidth + dayColWidth / 2;
+                let y = headerHeight + rowIndex * lessonRowHeight + cellPadding + 10;
+                const availableWidth = dayColWidth - (cellPadding * 2);
+                ctx.fillStyle = "#212529";
+                if (lessonInfo.subject && lessonInfo.subject.length > 0){
+                    ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+                    const subjectText = lessonInfo.subject.join(' ');
+                    y = wrapText(ctx, subjectText, x, y, availableWidth, lineHeight);
+                }
+                ctx.font = "18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+                if (lessonInfo.teacher) {
+                    ctx.fillText(lessonInfo.teacher, x, y, availableWidth);
+                    y += lineHeight;
+                }
+                if (lessonInfo.cabinet) {
+                    ctx.fillText(lessonInfo.cabinet, x, y, availableWidth);
+                }
+            }
+        });
+        const scheduleX = lessonNumColWidth + daysInSchedule.length * dayColWidth;
+        drawCallSchedule(ctx, scheduleX, canvas.height, callScheduleColWidth, callScheduleData);
+        ctx.strokeStyle = "#E9ECEF";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(lessonNumColWidth, 0);
+        ctx.lineTo(lessonNumColWidth, canvas.height);
+        daysInSchedule.forEach((_, i) => {
+            const x = lessonNumColWidth + (i + 1) * dayColWidth;
+            if (x < canvas.width) {
+               ctx.moveTo(x, 0);
+               ctx.lineTo(x, canvas.height);
+            }
+        });
+        ctx.moveTo(scheduleX, 0);
+        ctx.lineTo(scheduleX, canvas.height);
+        for (let i = 0; i <= 6; i++) {
+            const y = headerHeight + i * lessonRowHeight;
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+        }
+        ctx.stroke();
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawCallSchedule(ctx, x, height, colWidth, data) {
+        ctx.fillStyle = "#212529";
+        ctx.textAlign = "left";
+        const padding = 20;
+        let currentY = 0;
+        const drawSection = (sectionData, isPairSection) => {
+            if (!sectionData) return;
+            currentY += 35;
+            ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+            const titleText = `${sectionData.icon} ${sectionData.title}`;
+            ctx.fillText(titleText, x + padding, currentY);
+            currentY += 12;
+            ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+            const items = isPairSection ? sectionData.pairs : [{ times: sectionData.times }];
+            items.forEach(item => {
+                currentY += 25;
+                if (item.name) {
+                    ctx.fillText(item.name, x + padding, currentY);
+                }
+                item.times.forEach(time => {
+                    if(!item.name) {
+                         currentY += 5;
+                         ctx.fillText(time, x + padding, currentY);
+                    } else {
+                        ctx.textAlign = "right";
+                        ctx.fillText(time, x + colWidth - padding, currentY);
+                        ctx.textAlign = "left";
+                    }
+                    currentY += 20;
+                });
+            });
+        };
+        drawSection(data.weekday_schedule, true);
+        drawSection(data.weekday_lunch, false);
+        currentY += 15;
+        ctx.beginPath();
+        ctx.moveTo(x + padding, currentY);
+        ctx.lineTo(x + colWidth - padding, currentY);
+        ctx.strokeStyle = "#E9ECEF";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        drawSection(data.saturday_schedule, true);
+        drawSection(data.saturday_lunch, false);
+    }
+
+    function openLightbox(imgUrl) {
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightboxImg');
+      lightboxImg.src = imgUrl;
+      lightbox.classList.add('show');
+    }
+
+    function closeLightbox(event) {
+      if (event.target.id === 'lightbox' || event.target.id === 'lightboxImg') {
+        document.getElementById('lightbox').classList.remove('show');
+      }
+    }
+
+    const historyList = document.getElementById('historyList');
+    const historySection = document.getElementById('historySection');
+    let historyImages = [];
+
+    function addToHistory(imgUrl) {
+      historyImages.unshift(imgUrl);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = '';
+      historyImages.forEach((imgUrl, idx) => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        
+        const img = document.createElement('img');
+        img.className = 'history-image';
+        img.src = imgUrl;
+        img.alt = 'Сгенерированное расписание';
+        img.onclick = () => openLightbox(imgUrl);
+        item.appendChild(img);
+        
+        const downloadBtn = document.createElement('div');
+        downloadBtn.className = 'history-download';
+        downloadBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3V15M10 15L5 10M10 15L15 10" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        downloadBtn.onclick = (e) => {
+          e.stopPropagation();
+          const a = document.createElement('a');
+          a.href = imgUrl;
+          a.download = 'schedule.png';
+          a.click();
+        };
+        item.appendChild(downloadBtn);
+        
+        historyList.appendChild(item);
+      });
+      
+      historySection.classList.toggle('hidden', historyImages.length === 0);
+    }
+
+    const origGenerateImage = window.generateImage;
+    window.generateImage = async function() {
+      await origGenerateImage();
+      const outputImg = document.getElementById('outputImg');
+      const preview = document.getElementById('preview');
+      if (outputImg && outputImg.src && outputImg.src.startsWith('data:image')) {
+        preview.classList.remove('hidden');
+        addToHistory(outputImg.src);
+      }
+    };
+
+    // Обновляем выбор стилей
+    document.addEventListener('DOMContentLoaded', function() {
+      const styleOptions = document.querySelectorAll('.style-option');
+      styleOptions.forEach(option => {
+        const radio = option.querySelector('input[type="radio"]');
+        const preview = option.querySelector('.style-preview');
+        
+        option.addEventListener('click', function() {
+          document.querySelectorAll('.style-preview').forEach(p => p.classList.remove('selected'));
+          preview.classList.add('selected');
+          radio.checked = true;
+        });
+      });
+      
+      // Устанавливаем первый стиль как выбранный по умолчанию
+      document.querySelector('.style-preview.style1').classList.add('selected');
+      
+      // Обработчики кнопок
+      document.getElementById('chooseStyleBtn').onclick = function() {
+        document.getElementById('styleSelector').classList.add('hidden');
+        document.getElementById('mainInput').classList.remove('hidden');
+      };
+      
+      document.getElementById('backToStyleBtn').onclick = function() {
+        document.getElementById('mainInput').classList.add('hidden');
+        document.getElementById('styleSelector').classList.remove('hidden');
+      };
+    });
+  </script>
+</body>
+</html>
