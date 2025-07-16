@@ -486,6 +486,9 @@
       animation: fadeIn 0.5s ease-out;
     }
   </style>
+  <!-- 🔐 Защита от XSS, подмены, downgrade -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; upgrade-insecure-requests;">
+  <meta http-equiv="Strict-Transport-Security" content="max-age=63072000; includeSubDomains; preload">
 </head>
 <body>
   <div class="container">
