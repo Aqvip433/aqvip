@@ -253,6 +253,155 @@
       transform: scale(0.98);
     }
     
+    /* Кнопка загрузки группы */
+    .load-group-btn {
+      background: #34C759;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .load-group-btn:hover {
+      background: #28A745;
+    }
+    
+    .load-group-btn:active {
+      transform: scale(0.98);
+    }
+    
+    /* Модальное окно выбора группы */
+    .group-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .group-modal.show {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .group-modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(-20px) scale(0.95); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+    }
+    
+    .group-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .group-modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1d1d1f;
+    }
+    
+    .group-modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #8e8e93;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    
+    .group-modal-close:hover {
+      background: #f5f5f7;
+      color: #1d1d1f;
+    }
+    
+    .group-search {
+      margin-bottom: 20px;
+    }
+    
+    .group-search input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e5e5ea;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #fafafa;
+      transition: all 0.2s ease;
+    }
+    
+    .group-search input:focus {
+      outline: none;
+      border-color: #007AFF;
+      background: white;
+    }
+    
+    .group-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .group-item {
+      background: #f8f9fa;
+      border: 1px solid #e5e5ea;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .group-item:hover {
+      background: #007AFF;
+      color: white;
+      border-color: #007AFF;
+    }
+    
+    .group-item:active {
+      transform: scale(0.98);
+    }
+    
+    .group-item.selected {
+      background: #007AFF;
+      color: white;
+      border-color: #007AFF;
+    }
+    
     /* Preview section */
     .preview {
       background: white;
@@ -460,6 +609,27 @@
       .history-image {
         height: 100px;
       }
+      
+      /* Адаптивность для модального окна группы */
+      .group-modal-content {
+        margin: 20px;
+        padding: 20px;
+        max-height: 90vh;
+      }
+      
+      .group-modal-title {
+        font-size: 20px;
+      }
+      
+      .group-list {
+        grid-template-columns: 1fr;
+        max-height: 300px;
+      }
+      
+      .group-item {
+        padding: 12px;
+        font-size: 14px;
+      }
     }
     
     @media (max-width: 480px) {
@@ -538,6 +708,9 @@
         
         <div class="textarea-container">
           <label class="textarea-label">Вставьте сюда текст расписания...</label>
+          <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+            <button id="loadGroupBtn" class="load-group-btn">📚 Загрузить расписание группы</button>
+          </div>
           <textarea id="inputText" placeholder="Вставьте сюда текст расписания...">📚 Расписание для группы 24/ИП-191к
 Сверяйте расписание с гугл таблицей! Здесь возможны ошибки. В случае неточностей, сообщите нам!
 
@@ -577,6 +750,22 @@
 
   <div id="styleLightbox" class="style-lightbox" onclick="closeStyleLightbox(event)">
     <canvas id="lightboxCanvas" class="lightbox-canvas" width="400" height="260"></canvas>
+  </div>
+
+  <!-- Модальное окно выбора группы -->
+  <div id="groupModal" class="group-modal" onclick="closeGroupModal(event)">
+    <div class="group-modal-content" onclick="event.stopPropagation()">
+      <div class="group-modal-header">
+        <h2 class="group-modal-title">Выберите группу</h2>
+        <button class="group-modal-close" onclick="closeGroupModal()">×</button>
+      </div>
+      <div class="group-search">
+        <input type="text" id="groupSearch" placeholder="Поиск группы..." oninput="filterGroups()">
+      </div>
+      <div id="groupList" class="group-list">
+        <!-- Группы будут загружены динамически -->
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
