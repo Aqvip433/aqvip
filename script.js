@@ -1,4 +1,5 @@
 let selectedStyle = 'style1';
+let scheduleData = null; // Глобальная переменная для хранения данных расписания
 
 window.addEventListener('DOMContentLoaded', function() {
   // Мини-превью таблиц (только для style1 и style3)
@@ -34,7 +35,139 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('mainInput').classList.add('hidden');
     document.getElementById('styleSelector').classList.remove('hidden');
   };
+
+  // Кнопка загрузки группы
+  document.getElementById('loadGroupBtn').onclick = function() {
+    openGroupModal();
+  };
+
+  // Обработчик клавиши Escape для закрытия модального окна
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      const groupModal = document.getElementById('groupModal');
+      if (groupModal.classList.contains('show')) {
+        closeGroupModal();
+      }
+    }
+  });
 });
+
+// Функции для работы с модальным окном группы
+window.openGroupModal = async function() {
+  const modal = document.getElementById('groupModal');
+  const groupList = document.getElementById('groupList');
+  
+  // Показываем модальное окно сразу
+  modal.classList.add('show');
+  groupList.innerHTML = '<div style="text-align: center; padding: 20px; color: #8e8e93;">Загрузка групп...</div>';
+  
+  if (!scheduleData) {
+    try {
+      const response = await fetch('raspisanie.json');
+      if (!response.ok) {
+        throw new Error('Не удалось загрузить файл расписания');
+      }
+      scheduleData = await response.json();
+    } catch (error) {
+      groupList.innerHTML = '<div style="text-align: center; padding: 20px; color: #ff3b30;">Ошибка загрузки расписания: ' + error.message + '</div>';
+      return;
+    }
+  }
+  
+  renderGroupList();
+  document.getElementById('groupSearch').focus();
+};
+
+window.closeGroupModal = function(event) {
+  if (event && event.target.id === 'groupModal') {
+    document.getElementById('groupModal').classList.remove('show');
+  } else {
+    document.getElementById('groupModal').classList.remove('show');
+  }
+};
+
+window.filterGroups = function() {
+  const searchTerm = document.getElementById('groupSearch').value.toLowerCase();
+  const groupItems = document.querySelectorAll('.group-item');
+  
+  groupItems.forEach(item => {
+    const groupName = item.textContent.toLowerCase();
+    if (groupName.includes(searchTerm)) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+};
+
+window.selectGroup = function(groupName) {
+  if (!scheduleData || !scheduleData[groupName]) {
+    alert('Данные для группы не найдены');
+    return;
+  }
+  
+  const formattedSchedule = formatScheduleForGroup(groupName, scheduleData[groupName]);
+  document.getElementById('inputText').value = formattedSchedule;
+  closeGroupModal();
+};
+
+function renderGroupList() {
+  const groupList = document.getElementById('groupList');
+  groupList.innerHTML = '';
+  
+  if (!scheduleData) return;
+  
+  const groups = Object.keys(scheduleData).sort();
+  
+  groups.forEach(group => {
+    const groupItem = document.createElement('div');
+    groupItem.className = 'group-item';
+    groupItem.textContent = group;
+    groupItem.onclick = () => selectGroup(group);
+    groupList.appendChild(groupItem);
+  });
+}
+
+function formatScheduleForGroup(groupName, groupData) {
+  const daysInRussian = ["ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"];
+  const dayOrder = { "ПОНЕДЕЛЬНИК": 1, "ВТОРНИК": 2, "СРЕДА": 3, "ЧЕТВЕРГ": 4, "ПЯТНИЦА": 5, "СУББОТА": 6 };
+  const lessonEmojiMap = {
+    '1': '1️⃣', '2': '2️⃣', '3': '3️⃣', '4': '4️⃣', '5': '5️⃣',
+    '6': '6️⃣', '7': '7️⃣', '8': '8️⃣', '9': '9️⃣'
+  };
+  
+  let scheduleText = `📚 Расписание для группы ${groupName}\n`;
+  scheduleText += `Сверяйте расписание с гугл таблицей! Здесь возможны ошибки. В случае неточностей, сообщите нам!\n\n\n`;
+  
+  // Сортируем дни недели в правильном порядке
+  const sortedDays = Object.keys(groupData).sort((a, b) => dayOrder[a] - dayOrder[b]);
+  
+  sortedDays.forEach(day => {
+    scheduleText += `═══════════════\n`;
+    scheduleText += `${day}\n`;
+    scheduleText += `═══════════════\n`;
+    
+    const daySchedule = groupData[day];
+    const sortedLessons = Object.keys(daySchedule).sort((a, b) => parseInt(a) - parseInt(b));
+    
+    sortedLessons.forEach(lessonNum => {
+      const lesson = daySchedule[lessonNum];
+      scheduleText += `${lessonEmojiMap[lessonNum]} ${lesson.предмет}\n`;
+      
+      if (lesson.преподаватель) {
+        scheduleText += `Преподаватель: ${lesson.преподаватель}\n`;
+      }
+      
+      if (lesson.кабинет) {
+        scheduleText += `Кабинет: ${lesson.кабинет}\n`;
+      }
+      
+      scheduleText += `\n`;
+    });
+  });
+  
+  return scheduleText;
+}
 
 // Для интеграции с основной логикой генерации
 function getSelectedStyle() {
